@@ -1,5 +1,6 @@
 mod config;
 mod queue;
+mod deps;
 
 use config::Config;
 use eframe::egui;
@@ -7,6 +8,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{Receiver, Sender};
 
+use crate::deps::DepStatus;
 use crate::queue::{AudioFormat, QueueItem, Source, Status};
 
 fn main() -> eframe::Result {
@@ -37,6 +39,10 @@ struct PlaylistFetcherApp {
     last_processed: Option<String>,
     cancel_flag: Arc<AtomicBool>,
     selected_format: AudioFormat,
+
+    // state to check if dependencies are installed so the user doesn't end up adding a bunch of
+    // songs to the queue and it not work
+    dep_status: DepStatus,
 }
 
 impl PlaylistFetcherApp {
@@ -68,6 +74,7 @@ impl PlaylistFetcherApp {
             last_processed: None,
             cancel_flag: Arc::new(AtomicBool::new(false)),
             selected_format: AudioFormat::Flac,
+            dep_status: DepStatus::check(),
         }
     }
 
@@ -259,7 +266,6 @@ impl eframe::App for PlaylistFetcherApp {
             .show(ui, |ui| {
                 ui.label(egui::RichText::new("Playlists").heading().strong());
                 ui.add_space(4.0);
-                ui.separator();
                 ui.add_space(8.0);
 
                 if self.config.playlists.is_empty() {
@@ -376,6 +382,33 @@ impl eframe::App for PlaylistFetcherApp {
                         self.new_playlist_error = None;
                     }
                 }
+
+                ui.separator();
+
+                ui.horizontal(|ui| {
+                    ui.label(egui::RichText::new("Dependencies").strong());
+                    let recheck_btn = ui.small_button("Recheck");
+                    if recheck_btn.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
+                        self.dep_status = DepStatus::check();
+                    }
+                });
+
+                let dep_check = |ui: &mut egui::Ui, name: &str, ok: bool| {
+                    ui.horizontal(|ui| {
+                        let (label, color) = if ok {
+                            ("Installed", egui::Color32::from_rgb(100, 200, 120))
+                        } else {
+                            ("Missing", egui::Color32::from_rgb(230, 90, 90))
+                        };
+
+                        ui.label(format!("{}:", name));
+                        ui.label(egui::RichText::new(label).color(color).strong());
+                    })
+                };
+
+                dep_check(ui, "spotdl", self.dep_status.spotdl);
+                dep_check(ui, "scdl", self.dep_status.scdl);
+                dep_check(ui, "ffmpeg", self.dep_status.ffmpeg);
             });
 
         egui::CentralPanel::default()
