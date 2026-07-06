@@ -124,7 +124,12 @@ impl PlaylistFetcherApp {
                     }
                     Source::SoundCloud => {
                         let mut c = std::process::Command::new("scdl");
-                        c.arg("-l").arg(&item.url).arg("--path").arg(&target_dir);
+                        c.arg("-l")
+                            .arg(&item.url)
+                            .arg("--path")
+                            .arg(&target_dir)
+                            .arg("--name-format")
+                            .arg("%(title)s");
                         c
                     }
                     Source::Unknown => continue,
