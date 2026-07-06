@@ -149,7 +149,7 @@ impl PlaylistFetcherApp {
                 };
 
                 let mut was_cancelled = false;
-                
+
                 loop {
                     match child.try_wait() {
                         Ok(Some(_)) => break,
@@ -408,7 +408,7 @@ impl eframe::App for PlaylistFetcherApp {
                                 {
                                     self.cancel_flag.store(true, Ordering::SeqCst);
                                 }
-                                ui.add(egui::Spinner::new().size(16.0));
+                                // ui.add(egui::Spinner::new().size(16.0));
                             }
 
                             let total = self.queue.len().max(1);
@@ -418,12 +418,14 @@ impl eframe::App for PlaylistFetcherApp {
                                 .filter(|i| matches!(i.status, Status::Done | Status::Failed))
                                 .count();
 
-                            ui.add(
-                                egui::ProgressBar::new(done as f32 / total as f32)
-                                    .text(format!("{done}/{total}"))
-                                    .desired_width(ui.available_width())
-                                    .desired_height(24.0),
-                            );
+                            if self.processing {
+                                ui.add(
+                                    egui::ProgressBar::new(done as f32 / total as f32)
+                                        .text(format!("{done}/{total}"))
+                                        .desired_width(ui.available_width())
+                                        .desired_height(24.0),
+                                );
+                            }
                         });
                         if let Some(msg) = &self.last_processed {
                             ui.add_space(4.0);
