@@ -444,7 +444,6 @@ impl eframe::App for PlaylistFetcherApp {
                                 {
                                     self.cancel_flag.store(true, Ordering::SeqCst);
                                 }
-                                // ui.add(egui::Spinner::new().size(16.0));
                             }
 
                             let total = self.queue.len().max(1);
