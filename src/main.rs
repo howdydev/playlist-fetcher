@@ -496,11 +496,12 @@ impl eframe::App for PlaylistFetcherApp {
                             });
                     });
 
-                    let is_soundcloud = Source::from_url(&self.new_url) == Source::SoundCloud;
+                    let no_format_option = Source::from_url(&self.new_url) == Source::SoundCloud
+                        || Source::from_url(&self.new_url) == Source::Unknown;
 
                     ui.vertical(|ui| {
                         ui.label("Format");
-                        ui.add_enabled_ui(!is_soundcloud, |ui| {
+                        ui.add_enabled_ui(!no_format_option, |ui| {
                             egui::ComboBox::from_id_salt("format_combo")
                                 .selected_text(self.selected_format.label())
                                 .show_ui(ui, |ui| {
@@ -515,7 +516,7 @@ impl eframe::App for PlaylistFetcherApp {
                         })
                         .response
                         .on_disabled_hover_text(
-                            "SoundCloud downloads use whatever format SoundCloud serves",
+                            "Current link does not support switching format options.",
                         );
                     });
 
