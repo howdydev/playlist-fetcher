@@ -1,6 +1,6 @@
 mod config;
-mod queue;
 mod deps;
+mod queue;
 
 use config::Config;
 use eframe::egui;
@@ -388,7 +388,10 @@ impl eframe::App for PlaylistFetcherApp {
                 ui.horizontal(|ui| {
                     ui.label(egui::RichText::new("Dependencies").strong());
                     let recheck_btn = ui.small_button("Recheck");
-                    if recheck_btn.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() {
+                    if recheck_btn
+                        .on_hover_cursor(egui::CursorIcon::PointingHand)
+                        .clicked()
+                    {
                         self.dep_status = DepStatus::check();
                     }
                 });
@@ -519,28 +522,33 @@ impl eframe::App for PlaylistFetcherApp {
                             "Current link does not support switching format options.",
                         );
                     });
+                    let invalid_option = Source::from_url(&self.new_url) == Source::Unknown;
 
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        let resp = ui.button("Add to Queue");
-                        if resp
-                            .on_hover_cursor(egui::CursorIcon::PointingHand)
-                            .clicked()
-                        {
-                            if let Some(id) = self.selected_playlist {
-                                let source = Source::from_url(&self.new_url);
-                                if source != Source::Unknown && !self.new_url.is_empty() {
-                                    self.queue.push(QueueItem {
-                                        url: self.new_url.clone(),
-                                        playlist_name: self.config.playlists[id].name.clone(),
-                                        source,
-                                        status: Status::Pending,
-                                        format: self.selected_format,
-                                        error: None,
-                                    });
-                                    self.new_url.clear();
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::BOTTOM), |ui| {
+                        ui.add_enabled_ui(!invalid_option, |ui| {
+                            let resp = ui.button("Add to Queue");
+                            if resp
+                                .on_hover_cursor(egui::CursorIcon::PointingHand)
+                                .clicked()
+                            {
+                                if let Some(id) = self.selected_playlist {
+                                    let source = Source::from_url(&self.new_url);
+                                    if source != Source::Unknown && !self.new_url.is_empty() {
+                                        self.queue.push(QueueItem {
+                                            url: self.new_url.clone(),
+                                            playlist_name: self.config.playlists[id].name.clone(),
+                                            source,
+                                            status: Status::Pending,
+                                            format: self.selected_format,
+                                            error: None,
+                                        });
+                                        self.new_url.clear();
+                                    }
                                 }
                             }
-                        }
+                        })
+                        .response
+                        .on_disabled_hover_text("Invalid link");
                     });
                 });
 
