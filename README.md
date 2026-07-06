@@ -5,6 +5,8 @@ A desktop GUI for managing music downloads via `spotdl` and `scdl` built in Rust
 Create a "Playlist" and set a target folder in the side panel as a download directory, you can have as many as you like. Paste a Spotify of SoundCloud link, pick a target playlist and format if applicable and queue it up. It will download the tracks to the selected folder.
 The app handles calling the correct downloader under the hood and organizing files into the folders you define.
 
+![Preview](Preview.png)
+
 ## Features
 
 - Define named playlists mapped to folders on the disk
